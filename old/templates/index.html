@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Sample Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        .container {
+            text-align: center;
+        }
+        .loading {
+            display: none;
+        }
+        .audio-container, .image-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generate or View Pre-generated Samples</h1>
+        <textarea readonly rows="3" cols="50">Lorem ipsum dolor sit amet, consectetur adipiscing elit...</textarea>
+        <br><br>
+
+        <label for="dataset">Select Dataset:</label>
+        <select id="dataset">
+            <!-- Options will be dynamically populated -->
+        </select>
+
+        <label for="model_id">Select which model:</label>
+        <select id="model_id">
+            <!-- Options will be dynamically populated based on selected dataset -->
+        </select>
+
+        <br><br>
+
+        <label for="batch_size">Select Batch Size:</label>
+        <select id="batch_size">
+            <option value="2">2</option>
+            <option value="4">4</option>
+            <option value="8">8</option>
+        </select>
+
+        <br><br>
+
+        <button id="pregen-btn">View Pre-generated Samples</button>
+        <button id="generate-btn">Generate New Samples</button>
+
+        <div id="loading" class="loading">Loading... Please wait.</div>
+        
+        <div class="image-container" id="image-container"></div>
+        <div class="audio-container" id="audio-container"></div>
+    </div>
+
+    <script>
+        // Fetch available datasets and models
+        function loadDatasets() {
+            fetch('/datasets')
+                .then(response => response.json())
+                .then(data => {
+                    const datasetSelect = document.getElementById('dataset');
+                    datasetSelect.innerHTML = '';
+                    data.datasets.forEach(dataset => {
+                        const option = document.createElement('option');
+                        option.value = dataset;
+                        option.text = dataset;
+                        datasetSelect.add(option);
+                    });
+                    loadModels(data.datasets[0]); // Load models for the first dataset
+                });
+        }
+
+        function loadModels(dataset) {
+            fetch(`/models/${dataset}`)
+                .then(response => response.json())
+                .then(data => {
+                    const modelSelect = document.getElementById('model_id');
+                    modelSelect.innerHTML = '';
+                    data.models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.text = model;
+                        modelSelect.add(option);
+                    });
+                });
+        }
+
+        document.getElementById('dataset').addEventListener('change', function() {
+            loadModels(this.value);
+        });
+
+        // Event handler for viewing pre-generated images
+        document.getElementById('pregen-btn').addEventListener('click', function() {
+            var batchSize = document.getElementById('batch_size').value;
+            var modelId = document.getElementById('model_id').value;
+            var dataset = document.getElementById('dataset').value;
+            var num_inference_steps = document.getElementById('num_inference_steps').value;
+            var loading = document.getElementById('loading');
+            var imageContainer = document.getElementById('image-container');
+            loading.style.display = 'block';
+            imageContainer.innerHTML = '';
+
+            var formData = new FormData();
+            formData.append('batch_size', batchSize);
+            formData.append('model_id', modelId);
+            formData.append('dataset', dataset);
+            formData.append('num_inference_steps', num_inference_steps);
+            formData.append('mode', 'pregen');
+
+            fetch('/generate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                var images = data.images;
+                images.forEach(function(filename) {
+                    var imageElement = `
+                        <div>
+                            <img src="/audio/${filename}" alt="${filename}" style="max-width: 300px;"/>
+                            <a href="/audio/${filename}" download>Download</a>
+                        </div>
+                    `;
+                    imageContainer.innerHTML += imageElement;
+                });
+            });
+        });
+
+        // Event handler for generating new samples
+        document.getElementById('generate-btn').addEventListener('click', function() {
+            var batchSize = document.getElementById('batch_size').value;
+            var modelId = document.getElementById('model_id').value;
+            var dataset = document.getElementById('dataset').value;
+            var loading = document.getElementById('loading');
+            var audioContainer = document.getElementById('audio-container');
+            loading.style.display = 'block';
+            audioContainer.innerHTML = '';
+
+            var formData = new FormData();
+            formData.append('batch_size', batchSize);
+            formData.append('model_id', modelId);
+            formData.append('dataset', dataset);
+            formData.append('mode', 'generate');
+
+            fetch('/generate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                var audioFiles = data.audio_files;
+                audioFiles.forEach(function(filename) {
+                    var audioPlayer = `
+                        <div>
+                            <audio controls>
+                                <source src="/audio/${filename}" type="audio/wav">
+                                Your browser does not support the audio element.
+                            </audio>
+                            <a href="/audio/${filename}" download>Download</a>
+                        </div>
+                    `;
+                    audioContainer.innerHTML += audioPlayer;
+                });
+            });
+        });
+
+        // Initial load
+        loadDatasets();
+    </script>
+</body>
+</html>
