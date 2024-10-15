@@ -4,6 +4,12 @@ import subprocess
 from pathlib import Path
 import math
 
+# TODO
+# delete directory of generated samples once session is finished?
+# loading bar of inference in real time? Possible or not?
+# display mel spectrograms too
+# Inpainting in real time! With selector
+
 # Function to dynamically load datasets
 def load_datasets(models_dir='models'):
     return [d for d in os.listdir(models_dir) if os.path.isdir(os.path.join(models_dir, d))]
@@ -74,13 +80,17 @@ if selected_dataset and selected_model_name:
         st.write("Using VAE found in the model directory.")
 
 # Run inference button
-pretrained_model_path = ""
+# Run inference button
 if st.button("Run Inference"):
-    pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, selected_model_step)
-    run_inference(pretrained_model_path, num_images=num_samples, num_inference_steps=num_inference_steps,
-                  n_iter=griffin_lim_iters, eval_batch_size=batch_size, scheduler=scheduler, 
-                  seed=seed, vae=vae_path)
-    st.success("Inference completed!")
+    if selected_dataset and selected_model_name and selected_model_step:
+        pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, selected_model_step)
+        run_inference(pretrained_model_path, num_images=num_samples, num_inference_steps=num_inference_steps,
+                      n_iter=griffin_lim_iters, eval_batch_size=batch_size, scheduler=scheduler, 
+                      seed=seed, vae=vae_path)
+        st.success("Inference completed!")
+    else:
+        st.error("Please select dataset, model name, and model step before running inference.")
+
 
 # Display progress bar based on inference steps
 progress_bar = st.progress(0)
@@ -100,10 +110,13 @@ def display_samples(audio_files, image_files, page_num, items_per_page=8):
 
 
 output_path = Path(pretrained_model_path) / 'samples'
-audio_path = 'audio/pregen_sch_ddpm_nisteps_1000' if not generate_new_samples else 'audio'
-image_path = 'audio/pregen_sch_ddpm_nisteps_1000' if not generate_new_samples else 'images'
+audio_path = f'audio/pregen_sch_{scheduler}_nisteps_{num_inference_steps}' if not generate_new_samples else f'audio/sch_{scheduler}_nisteps_{num_inference_steps}'
+image_path = f'images/pregen_sch_{scheduler}_nisteps_{num_inference_steps}' if not generate_new_samples else f'images/sch_{scheduler}_nisteps_{num_inference_steps}'
 audio_files = list((output_path / audio_path).glob("*.wav"))
 image_files = list((output_path / image_path).glob("*.png"))
+
+print(audio_files)
+print(image_files)
 
 if audio_files and image_files:
     total_samples = len(audio_files)
@@ -114,4 +127,4 @@ if audio_files and image_files:
     page_num = st.number_input("Page", min_value=0, max_value=total_pages - 1, value=0, step=1)
     
     # Display the samples for the current page
-    display_samples(audio_files, image_files, page_num, items_per_page)
+    display_samples(sorted(audio_files), sorted(image_files), page_num, items_per_page)
