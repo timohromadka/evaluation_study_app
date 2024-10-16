@@ -63,12 +63,12 @@ def display_login_page():
         else:
             st.error("Invalid username or password")
 
-    st.subheader("New here? Register below! (Currently disabled to allow for beta access)")
+    st.subheader("New here? Register below!")
 
     new_username = st.text_input("New Username")
     new_password = st.text_input("New Password", type="password")
     
-    if st.button("Register"):
+    if st.button("Register (Coming Soon!)", disabled=True):
         # Add this once we make it available to the public 
         if register_user(new_username, new_password):
             st.success("Registration successful! You can log in now.")
@@ -104,21 +104,22 @@ else:
         return [d for d in os.listdir(model_path) if os.path.isdir(os.path.join(model_path, d))]
 
     def run_inference(pretrained_model_path, num_images, num_inference_steps, n_iter, eval_batch_size, scheduler, seed, vae):
-        cmd = [
-            "python", "scripts/inference_unet.py",
-            "--pretrained_model_path", pretrained_model_path,
-            "--num_images", str(num_images),
-            "--num_inference_steps", str(num_inference_steps),
-            "--n_iter", str(n_iter),
-            "--seed", str(seed),
-            "--eval_batch_size", str(eval_batch_size),
-            "--scheduler", scheduler,
-        ]
-        if vae:
-            cmd += ["--vae", vae]
+            cmd = [
+                "python", "scripts/inference_unet.py",
+                "--pretrained_model_path", pretrained_model_path,
+                "--num_images", str(num_images),
+                "--num_inference_steps", str(num_inference_steps),
+                "--n_iter", str(n_iter),
+                "--seed", str(seed),
+                "--eval_batch_size", str(eval_batch_size),
+                "--scheduler", scheduler,
+            ]
+            if vae:
+                cmd += ["--vae", vae]
 
-        with st.spinner("Running inference..."):
-            subprocess.run(cmd)
+            with st.spinner("Running inference..."):
+                subprocess.run(cmd)
+
 
     st.title("Music Generation Model Inference")
 
@@ -133,9 +134,10 @@ else:
         model_steps = load_model_steps(selected_dataset, selected_model_name)
         selected_model_step = st.selectbox("Select Model Step", model_steps)
 
-    batch_sizes = [2 ** i for i in range(6)]  # [1, 2, 4, 8, 16, 32, 64, 128]
+    power_of_2 = 6
+    batch_sizes = [2 ** i for i in range(power_of_2)]  # [1, 2, 4, 8, 16, 32, 64, 128]
     batch_size = st.select_slider("Batch Size", options=batch_sizes, value=4)
-    num_samples = st.slider("Number of Samples to Generate", min_value=1, max_value=16, value=4)
+    num_samples = st.slider("Number of Samples to Generate", min_value=1, max_value=2**(power_of_2-2), value=4)
     num_inference_steps = st.slider("Inference Steps (For best results, use at least 250 DDPM steps)", min_value=0, max_value=1000, value=500)
     griffin_lim_iters = st.slider("Griffin-Lim Iterations", min_value=0, max_value=128, value=64)
     scheduler = st.selectbox("Scheduler", options=["ddpm", "ddim"])
@@ -167,11 +169,11 @@ else:
         else:
             if st.button("Run Inference"):
                 if selected_dataset and selected_model_name and selected_model_step:
+                    st.session_state.inference_running = True
                     run_inference(pretrained_model_path, num_images=num_samples, num_inference_steps=num_inference_steps,
                                 n_iter=griffin_lim_iters, eval_batch_size=batch_size, scheduler=scheduler, 
                                 seed=seed, vae=vae_path)
                     st.session_state.inference_complete = True
-                    st.session_state.inference_running = True
     else:
         if st.button("Display Samples"):
             st.session_state.inference_complete = True
