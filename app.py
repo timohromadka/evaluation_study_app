@@ -3,12 +3,8 @@ import os
 import subprocess
 from pathlib import Path
 import math
+import time
 
-import streamlit as st
-import os
-import subprocess
-from pathlib import Path
-import math
 import bcrypt
 import json
 
@@ -67,16 +63,19 @@ def display_login_page():
         else:
             st.error("Invalid username or password")
 
-    st.subheader("New here? Register below!")
+    st.subheader("New here? Register below! (Currently disabled to allow for beta access)")
 
     new_username = st.text_input("New Username")
     new_password = st.text_input("New Password", type="password")
     
     if st.button("Register"):
+        # Add this once we make it available to the public 
         if register_user(new_username, new_password):
             st.success("Registration successful! You can log in now.")
         else:
             st.error("Username already taken.")
+
+
 
 # Check if the user is logged in
 if 'logged_in' not in st.session_state:
@@ -137,7 +136,7 @@ else:
     batch_sizes = [2 ** i for i in range(6)]  # [1, 2, 4, 8, 16, 32, 64, 128]
     batch_size = st.select_slider("Batch Size", options=batch_sizes, value=4)
     num_samples = st.slider("Number of Samples to Generate", min_value=1, max_value=16, value=4)
-    num_inference_steps = st.slider("Inference Steps", min_value=0, max_value=1000, value=500)
+    num_inference_steps = st.slider("Inference Steps (For best results, use at least 250 DDPM steps)", min_value=0, max_value=1000, value=500)
     griffin_lim_iters = st.slider("Griffin-Lim Iterations", min_value=0, max_value=128, value=64)
     scheduler = st.selectbox("Scheduler", options=["ddpm", "ddim"])
 
