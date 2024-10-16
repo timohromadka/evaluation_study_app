@@ -97,11 +97,14 @@ else:
 
     def load_model_names(dataset, models_dir='models'):
         dataset_path = os.path.join(models_dir, dataset)
-        return [d for d in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, d)) and 'logs' not in d]
+        return [d for d in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, d)) 
+                and 'logs' not in d]
 
     def load_model_steps(dataset, model_name, models_dir='models'):
         model_path = os.path.join(models_dir, dataset, model_name)
-        return [d for d in os.listdir(model_path) if os.path.isdir(os.path.join(model_path, d))]
+        return [d for d in os.listdir(model_path) if os.path.isdir(os.path.join(model_path, d))
+                and 'logs' not in d
+                and 'vae' not in d]
 
     def run_inference(pretrained_model_path, num_images, num_inference_steps, n_iter, eval_batch_size, scheduler, seed, vae):
             cmd = [
