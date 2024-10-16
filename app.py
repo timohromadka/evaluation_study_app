@@ -10,9 +10,16 @@ import math
 # display mel spectrograms too
 # Inpainting in real time! With selector
 
-# Function to dynamically load datasets
 def load_datasets(models_dir='models'):
-    return [d for d in os.listdir(models_dir) if os.path.isdir(os.path.join(models_dir, d))]
+    datasets = [d for d in os.listdir(models_dir) if os.path.isdir(os.path.join(models_dir, d))]
+
+    # display as first
+    if 'spotify_sleep_dataset' in datasets:
+        datasets.remove('spotify_sleep_dataset')
+        datasets.insert(0, 'spotify_sleep_dataset')
+    
+    return datasets
+
 
 # Function to load available model names for a given dataset
 def load_model_names(dataset, models_dir='models'):
@@ -80,7 +87,7 @@ if selected_dataset and selected_model_name:
         st.write("Using VAE found in the model directory.")
 
 # Run inference button
-# Run inference button
+pretrained_model_path = ""
 if st.button("Run Inference"):
     if selected_dataset and selected_model_name and selected_model_step:
         pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, selected_model_step)
@@ -114,9 +121,6 @@ audio_path = f'audio/pregen_sch_{scheduler}_nisteps_{num_inference_steps}' if no
 image_path = f'images/pregen_sch_{scheduler}_nisteps_{num_inference_steps}' if not generate_new_samples else f'images/sch_{scheduler}_nisteps_{num_inference_steps}'
 audio_files = list((output_path / audio_path).glob("*.wav"))
 image_files = list((output_path / image_path).glob("*.png"))
-
-print(audio_files)
-print(image_files)
 
 if audio_files and image_files:
     total_samples = len(audio_files)
