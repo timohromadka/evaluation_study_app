@@ -141,12 +141,10 @@ else:
     batch_sizes = [2 ** i for i in range(power_of_2)]  # [1, 2, 4, 8, 16, 32, 64, 128]
     batch_size = st.select_slider("Batch Size", options=batch_sizes, value=4)
     num_samples = st.slider("Number of Samples to Generate", min_value=1, max_value=2**(power_of_2-2), value=4)
-    num_inference_steps = st.slider("Inference Steps (For best results, use at least 250 DDPM steps)", min_value=0, max_value=1000, value=500)
-    griffin_lim_iters = st.slider("Griffin-Lim Iterations", min_value=0, max_value=128, value=64)
     scheduler = st.selectbox("Scheduler", options=["ddpm"])
-    scheduler = st.selectbox("Scheduler", options=["ddpm", "ddim"])
-
-    generate_new_samples = st.checkbox("Generate New Samples", value=True)
+    # scheduler = st.selectbox("Scheduler", options=["ddpm", "ddim"])
+    num_inference_steps = st.slider("Inference Steps (For best results, use at least 250 DDPM steps, at least 50 DDIM steps)", min_value=0, max_value=1000, value=500)
+    griffin_lim_iters = st.slider("Griffin-Lim Iterations", min_value=0, max_value=128, value=64)
 
     seed = st.number_input("Seed", min_value=0, value=42)
     vae_path = None
@@ -166,21 +164,19 @@ else:
     if "inference_running" not in st.session_state:
         st.session_state.inference_running = False
 
-    # Conditional button rendering based on 'generate_new_samples'
-    if generate_new_samples:
-        if st.session_state.inference_running:
-            st.button("Run Inference", disabled=True)
-        else:
-            if st.button("Run Inference"):
-                if selected_dataset and selected_model_name and selected_model_step:
-                    st.session_state.inference_running = True
-                    run_inference(pretrained_model_path, num_images=num_samples, num_inference_steps=num_inference_steps,
-                                n_iter=griffin_lim_iters, eval_batch_size=batch_size, scheduler=scheduler, 
-                                seed=seed, vae=vae_path)
-                    st.session_state.inference_complete = True
+    if st.session_state.inference_running:
+        st.button("Run Inference", disabled=True)
     else:
-        if st.button("Display Samples", key="display_samples"):
-            st.session_state.inference_complete = True
+        if st.button("Run Inference"):
+            if selected_dataset and selected_model_name and selected_model_step:
+                st.session_state.inference_running = True
+                run_inference(pretrained_model_path, num_images=num_samples, num_inference_steps=num_inference_steps,
+                            n_iter=griffin_lim_iters, eval_batch_size=batch_size, scheduler=scheduler, 
+                            seed=seed, vae=vae_path)
+                st.session_state.inference_complete = True
+                
+    # if st.button("Display Generated Samples", key="display_generated_samples"):
+    #     st.session_state.inference_complete = True
 
     if st.session_state.inference_running:
         progress_bar = st.progress(0)
@@ -191,14 +187,21 @@ else:
     # Pagination function using prev, numbered pages, and next buttons
     def display_samples_with_pagination(audio_files, image_files, current_page, items_per_page=8):
         start_idx = current_page * items_per_page
-        end_idx = min(start_idx + items_per_page, len(audio_files))
+        end_idx = min(start_idx + items_per_page, len(audio_files))  # Adjust end_idx to include the last audio file
         
         for i in range(start_idx, end_idx):
             st.write(f"Sample {i + 1}")
+            
+            # Display audio file
             st.audio(str(audio_files[i]))
-            st.image(str(image_files[i]))
+            
+            # Display image if it exists
+            if i < len(image_files) and os.path.exists(image_files[i]):
+                st.image(str(image_files[i]))
+                st.download_button("Download Image", data=open(image_files[i], "rb"), file_name=os.path.basename(image_files[i]))
+            
+            # Always provide the audio download button
             st.download_button("Download Audio", data=open(audio_files[i], "rb"), file_name=os.path.basename(audio_files[i]))
-            st.download_button("Download Image", data=open(image_files[i], "rb"), file_name=os.path.basename(image_files[i]))
 
         total_pages = math.ceil(len(audio_files) / items_per_page)
         
@@ -216,23 +219,48 @@ else:
         # Display page numbers
         page_buttons = st.columns(total_pages)
         for i, button in enumerate(page_buttons):
-            if button.button(f"{i}", key=f"page_{i}"):
+            if button.button(f"{i + 1}", key=f"page_{i}"):
                 st.session_state.page_num = i
 
-    # Display samples if inference is complete or pre-generated samples are selected
-    if st.session_state.inference_complete:
-        if st.button("Display Samples"):
-            output_path = Path(pretrained_model_path) / 'samples'
-            audio_path = f'audio/pregen_sch_{scheduler}_nisteps_{num_inference_steps}' if not generate_new_samples else f'audio/sch_{scheduler}_nisteps_{num_inference_steps}'
-            image_path = f'images/pregen_sch_{scheduler}_nisteps_{num_inference_steps}' if not generate_new_samples else f'images/sch_{scheduler}_nisteps_{num_inference_steps}'
-            audio_files = list((output_path / audio_path).glob("*.wav"))
-            image_files = list((output_path / image_path).glob("*.png"))
+    def get_samples(output_path, scheduler, num_inference_steps, generate_new_samples=True):
+        audio_path = f'audio/pregen_sch_{scheduler}_nisteps_1000' if not generate_new_samples else f'audio/sch_{scheduler}_nisteps_{num_inference_steps}'
+        image_path = f'images/pregen_sch_{scheduler}_nisteps_1000' if not generate_new_samples else f'images/sch_{scheduler}_nisteps_{num_inference_steps}'
+        
+        audio_files = list((output_path / audio_path).glob("*.wav"))
+        image_files = list((output_path / image_path).glob("*.png"))
+        
+        return sorted(audio_files), sorted(image_files)
 
-            if audio_files and image_files:
-                items_per_page = 8
+    def display_sample_button(audio_files, image_files, items_per_page, button_key):
+        if audio_files and image_files:
+            if st.button("Display PRE-Generated Samples", key=button_key):  # Ensure button_key is unique
                 if "page_num" not in st.session_state:
                     st.session_state.page_num = 0
                 
-                display_samples_with_pagination(sorted(audio_files), sorted(image_files), st.session_state.page_num, items_per_page)
+                display_samples_with_pagination(audio_files, image_files, st.session_state.page_num, items_per_page)
+        else:
+            st.error("No samples found.")
+
+
+    def check_for_pregenerated_samples(selected_dataset, selected_model_name, selected_model_step, scheduler, pretrained_model_path):
+        if selected_dataset and selected_model_name and selected_model_step:
+            output_path = Path(pretrained_model_path) / 'samples'
+            audio_files, image_files = get_samples(output_path, scheduler, 1000, False)
+            
+            if audio_files and image_files:
+                display_sample_button(audio_files, image_files, 8, button_key='display_pregenerated_samples')
             else:
-                st.error("No samples found.")
+                st.error("No pregenerated samples found for selected model.")
+
+    # Check for pre-generated samples
+    if selected_dataset and selected_model_name and selected_model_step:
+        check_for_pregenerated_samples(selected_dataset, selected_model_name, selected_model_step, scheduler, pretrained_model_path)
+
+    # When inference is complete, display generated samples
+    if st.session_state.inference_complete:
+        output_path = Path(pretrained_model_path) / 'samples'
+        audio_files, image_files = get_samples(output_path, scheduler, num_inference_steps, True)
+        
+        display_sample_button(audio_files, image_files, 8, button_key='display_generated_samples')
+
+
