@@ -3,6 +3,9 @@
 # loading bar of inference in real time? Possible or not? have console be printed out
 # Inpainting in real time! With selector - make a second page from the start to ask what they want to do
 # make accessible to users on a) same network b) internet
+# get DDIM to work
+# put time taken to generate the samples
+# display pre generated samples with no bugs
 
 # DONE
 # display mel spectrograms too
