@@ -143,6 +143,7 @@ else:
     num_samples = st.slider("Number of Samples to Generate", min_value=1, max_value=2**(power_of_2-2), value=4)
     num_inference_steps = st.slider("Inference Steps (For best results, use at least 250 DDPM steps)", min_value=0, max_value=1000, value=500)
     griffin_lim_iters = st.slider("Griffin-Lim Iterations", min_value=0, max_value=128, value=64)
+    scheduler = st.selectbox("Scheduler", options=["ddpm"])
     scheduler = st.selectbox("Scheduler", options=["ddpm", "ddim"])
 
     generate_new_samples = st.checkbox("Generate New Samples", value=True)
@@ -178,7 +179,7 @@ else:
                                 seed=seed, vae=vae_path)
                     st.session_state.inference_complete = True
     else:
-        if st.button("Display Samples"):
+        if st.button("Display Samples", key="display_samples"):
             st.session_state.inference_complete = True
 
     if st.session_state.inference_running:
