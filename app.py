@@ -140,7 +140,7 @@ else:
     power_of_2 = 6
     batch_sizes = [2 ** i for i in range(power_of_2)]  # [1, 2, 4, 8, 16, 32, 64, 128]
     batch_size = st.select_slider("Batch Size", options=batch_sizes, value=4)
-    num_samples = st.slider("Number of Samples to Generate", min_value=1, max_value=2**(power_of_2-2), value=4)
+    num_samples = st.slider("Number of Samples to Generate", min_value=1, max_value=2**(power_of_2-1), value=4)
     scheduler = st.selectbox("Scheduler", options=["ddpm"])
     # scheduler = st.selectbox("Scheduler", options=["ddpm", "ddim"])
     num_inference_steps = st.slider("Inference Steps (For best results, use at least 250 DDPM steps, at least 50 DDIM steps)", min_value=0, max_value=1000, value=500)
@@ -233,7 +233,8 @@ else:
 
     def display_sample_button(audio_files, image_files, items_per_page, button_key):
         if audio_files and image_files:
-            if st.button("Display PRE-Generated Samples", key=button_key):  # Ensure button_key is unique
+            button_name = 'Display PRE-Generated Samples' if 'pre' in button_key else 'Display Generated Samples'
+            if st.button(button_name, key=button_key):  # Ensure button_key is unique
                 if "page_num" not in st.session_state:
                     st.session_state.page_num = 0
                 
