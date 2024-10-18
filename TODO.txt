@@ -1,5 +1,7 @@
 # TODO
 # delete directory of generated samples once session is finished?
+#   - even better would be to save them to a person profile, tied to their unique account
+#   - and have some sort of way of deleting unwanted samples, or only the favorited ones get kept, or similar
 # loading bar of inference in real time? Possible or not? have console be printed out
 # Inpainting in real time! With selector - make a second page from the start to ask what they want to do
 # make accessible to users on a) same network b) internet
