@@ -263,7 +263,7 @@ else:
                 if audio_files and image_files:
                     display_sample_button(audio_files, image_files, 8, button_key='display_pregenerated_samples')
                 else:
-                    st.error("No pregenerated samples found for selected model.")
+                    st.warning("No pregenerated samples found for selected model.")
 
         # Check for pre-generated samples
         if selected_dataset and selected_model_name and selected_model_step:
