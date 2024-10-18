@@ -106,7 +106,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_iter", type=int, default=32)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--eval_batch_size", type=int, default=32)
-    parser.add_argument("--scheduler", type=str, default='ddim', choices=['ddim', 'ddpm'])
+    parser.add_argument("--scheduler", type=str, default='ddpm', choices=['ddim', 'ddpm'])
     parser.add_argument("--vae", type=str, default=None, help="Path to a pretrained VAE model.")
     parser.add_argument("--encodings", type=str, default=None, help="Path to pickle file containing encodings.")
 
