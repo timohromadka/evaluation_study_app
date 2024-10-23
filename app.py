@@ -6,7 +6,7 @@ import math
 import time
 
 import streamlit as st
-from tabs import how_it_works, inference
+from tabs import how_it_works, inference, simple_inference
 from utils.user_auth import login_user, register_user
 
 def display_login_page():
@@ -52,5 +52,5 @@ else:
     
     # 'Inference' tab content
     with tabs[1]:
-        inference.display_inference_tab()
-        
+        # inference.display_inference_tab()
+        simple_inference.display_simple_inference_tab()
