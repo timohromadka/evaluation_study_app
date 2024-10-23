@@ -165,4 +165,3 @@ cython_debug/
 models/
 evaluation_app_venv/
 .vscode/
-users.json
