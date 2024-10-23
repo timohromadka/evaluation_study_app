@@ -10,7 +10,7 @@ def display_simple_inference_tab():
 
     selected_dataset = 'spotify_sleep_dataset'
     selected_model_name = 'ssd_512_128'
-    selected_model_step = 40_000
+    selected_model_step = '40000'
     num_samples = 8
     batch_size = 8
     scheduler = 'ddpm'
