@@ -164,4 +164,5 @@ cython_debug/
 # Custom
 models/
 evaluation_app_venv/
+evaluation_study_app_venv/
 .vscode/
