@@ -9,17 +9,17 @@ def display_simple_inference_tab():
     st.title("Music Generation Model Inference")
 
     selected_dataset = 'spotify_sleep_dataset'
-    selected_model_name = 'ssd_512_128'
-    selected_model_step = 40_000
+    selected_model_name = '512_128'
+    selected_model_step = '40000'
     num_samples = 8
     batch_size = 8
     scheduler = 'ddpm'
-    num_inference_steps = 500
+    num_inference_steps = 2
     griffin_lim_iters = 64
     seed = 42
     vae_path = None
     
-    pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, selected_model_step)
+    pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, f'model_step_{selected_model_step}')
 
     # vae_path = None
     # if selected_dataset and selected_model_name:
