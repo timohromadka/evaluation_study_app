@@ -9,8 +9,8 @@ def display_simple_inference_tab():
     st.title("Music Generation Model Inference")
 
     selected_dataset = 'spotify_sleep_dataset'
-    selected_model_name = '512_128'
-    selected_model_step = '40000'
+    selected_model_name = 'ra_ssd_512_128'
+    selected_model_step = '50000'
     num_samples = 8
     batch_size = 8
     scheduler = 'ddpm'
@@ -18,6 +18,17 @@ def display_simple_inference_tab():
     griffin_lim_iters = 64
     seed = 42
     vae_path = None
+
+    # Display all the variables as text boxes
+    st.text(f"Selected Dataset: {selected_dataset}")
+    st.text(f"Selected Model Name: {selected_model_name}")
+    st.text(f"Selected Model Step: {selected_model_step}")
+    st.text(f"Number of Samples: {num_samples}")
+    st.text(f"Batch Size: {batch_size}")
+    st.text(f"Scheduler: {scheduler}")
+    st.text(f"Number of Inference Steps: {num_inference_steps}")
+    st.text(f"Griffin-Lim Iterations: {griffin_lim_iters}")
+    st.text(f"Random Seed: {seed}")
     
     pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, f'model_step_{selected_model_step}')
 
