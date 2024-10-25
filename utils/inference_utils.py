@@ -40,3 +40,4 @@ def run_inference(pretrained_model_path, num_images, num_inference_steps, n_iter
 
         with st.spinner("Running inference..."):
             subprocess.run(cmd)
+
