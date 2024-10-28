@@ -14,21 +14,31 @@ def display_simple_inference_tab():
     num_samples = 8
     batch_size = 8
     scheduler = 'ddpm'
-    num_inference_steps = 2
+    num_inference_steps = 500
     griffin_lim_iters = 64
     seed = 42
     vae_path = None
 
     # Display all the variables as text boxes
-    st.text(f"Selected Dataset: {selected_dataset}")
-    st.text(f"Selected Model Name: {selected_model_name}")
-    st.text(f"Selected Model Step: {selected_model_step}")
-    st.text(f"Number of Samples: {num_samples}")
-    st.text(f"Batch Size: {batch_size}")
-    st.text(f"Scheduler: {scheduler}")
-    st.text(f"Number of Inference Steps: {num_inference_steps}")
-    st.text(f"Griffin-Lim Iterations: {griffin_lim_iters}")
-    st.text(f"Random Seed: {seed}")
+    # st.text(f"Selected Dataset: {selected_dataset}")
+    # st.text(f"Selected Model Name: {selected_model_name}")
+    # st.text(f"Selected Model Step: {selected_model_step}")
+    # st.text(f"Number of Samples: {num_samples}")
+    # st.text(f"Batch Size: {batch_size}")
+    # st.text(f"Scheduler: {scheduler}")
+    # st.text(f"Number of Inference Steps: {num_inference_steps}")
+    # st.text(f"Griffin-Lim Iterations: {griffin_lim_iters}")
+    # st.text(f"Random Seed: {seed}")
+    
+    st.text_input("Selected Dataset", selected_dataset, disabled=True)
+    st.text_input("Selected Model Name", selected_model_name, disabled=True)
+    st.text_input("Selected Model Step", selected_model_step, disabled=True)
+    st.number_input("Number of Samples", value=num_samples, disabled=True)
+    st.number_input("Batch Size", value=batch_size, disabled=True)
+    st.text_input("Scheduler", scheduler, disabled=True)
+    st.number_input("Number of Inference Steps", value=num_inference_steps, disabled=True)
+    st.number_input("Griffin-Lim Iterations", value=griffin_lim_iters, disabled=True)
+    st.number_input("Random Seed", value=seed, disabled=True)
     
     pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, f'model_step_{selected_model_step}')
 

@@ -5,11 +5,7 @@ import os
 def display_evaluation_form():
     """Displays the evaluation questionnaire."""
     st.subheader("Evaluation Questionnaire")
-
-    # Section 1: Collect user's name
-    name = st.text_input("Please enter your full name:")
-
-    # Collect responses to questions
+    
     audio_quality = st.selectbox(
         "1. How do you rate this generated music in terms of overall audio quality (1 being the lowest quality, 10 being the highest quality)?",
         options=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
@@ -35,7 +31,6 @@ def display_evaluation_form():
     if st.button("Submit"):
         # Collect responses
         responses = {
-            "name": name,
             "audio_quality": audio_quality,
             "sleep_music_similarity": sleep_music_similarity,
             "future_participation": future_participation,

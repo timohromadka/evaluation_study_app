@@ -7,8 +7,8 @@
 # make accessible to users on a) same network b) internet
 # get DDIM to work
 # put time taken to generate the samples
-# display pre generated samples with no bugs
 
 # DONE
 # display mel spectrograms too
 # login and registration
+# display pre generated samples with no bugs
