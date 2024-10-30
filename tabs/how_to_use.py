@@ -2,6 +2,10 @@ import streamlit as st
 
 def display_how_to_use():
     st.title("How to Use")
+    
+    st.write("""
+        This is an anonymized survey that will take approximately **5 minutes**. It it to help assess **AI generated music therapy for insomnia treatment**. This is a pilot study using a simple and small diffusion-based music generation model.
+    """)
 
     steps = [
         {
@@ -10,20 +14,21 @@ def display_how_to_use():
             "text": "After reading these steps, please navigate to the inference tab.",
             "image_width": 400
         },
+        # {
+        #     "name": "Step 2: Run the Model for Inference",
+        #     "image": "images/run_inference_button.png",
+        #     "text": "Click on the 'Run Inference' button to start the model inference. The process may take a few minutes as the GPU must be booted up first.",
+        #     "image_width": 200
+        # },
         {
-            "name": "Step 2: Run the Model for Inference",
-            "image": "images/run_inference_button.png",
-            "text": "Click on the 'Run Inference' button to start the model inference. The process may take a few minutes as the GPU must be booted up first.",
-            "image_width": 200
-        },
-        {
-            "name": "Step 3: Display and Listen to Generated Samples",
+            "name": "Step 2: Listen to Generated Samples",
             "image": "images/sample_preview.png",
+            "image": "images/samples_no_images.png",
             "text": "Once the generation is complete, you may preview each individual generated sample.",
             "image_width": 400
         },
         {
-            "name": "Step 4: Fill out the Evaluation Questionnaire",
+            "name": "Step 3: Fill out the Evaluation Questionnaire",
             "image": "images/evaluation_questionnaire.png",
             "text": "Lastly, head over to the 'Evaluation Questionnaire' tab and please fill out the questionnaire. Once you are done, you can submit.",
             "image_width": 400

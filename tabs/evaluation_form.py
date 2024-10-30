@@ -4,7 +4,7 @@ import os
 
 def display_evaluation_form():
     """Displays the evaluation questionnaire."""
-    st.subheader("Evaluation Questionnaire")
+    st.title("Evaluation Questionnaire")
     
     audio_quality = st.selectbox(
         "1. How do you rate this generated music in terms of overall audio quality (1 being the lowest quality, 10 being the highest quality)?",
@@ -23,9 +23,15 @@ def display_evaluation_form():
         "3. Do you experience any problems in falling asleep and would like to participate in a future follow-up survey to evaluate the effectiveness of this music therapy? If 'yes', please enter your email address:"
     )
     
-    clinician_status = st.text_input(
-        "4. Are you a clinician or a medical professional working in the context of sleep disorders or mental health disorders? If so, would you consider recommending music therapy for your patients experiencing insomnia and/or other related conditions?"
+    clinician_status = st.selectbox(
+        "4. Are you a clinician or a medical professional working in the context of sleep disorders or mental health disorders? If so, would you consider recommending music therapy for your patients experiencing insomnia and/or other related conditions?",
+        options=[
+            "Yes, I would consider recommending music therapy.",
+            "No, I wouldn't consider recommending music therapy.",
+            "N/A, I am not a medical professional."
+        ]
     )
+
 
     # Submit button
     if st.button("Submit"):
