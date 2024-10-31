@@ -43,11 +43,13 @@ def display_evaluation_form():
             "clinician_status": clinician_status
         }
         
-        # Save responses to a JSON file
         file_path = 'responses.json'
         if os.path.exists(file_path):
             with open(file_path, 'r+') as f:
-                data = json.load(f)
+                try:
+                    data = json.load(f)
+                except json.JSONDecodeError:
+                    data = []
                 data.append(responses)
                 f.seek(0)
                 json.dump(data, f)
