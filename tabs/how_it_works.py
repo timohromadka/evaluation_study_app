@@ -8,3 +8,6 @@ def display_how_it_works():
     st.write("""
         The system converts raw audio waveform into a mel-spectrogram representation, followed by VAE encoding into a smaller latent space. The diffusion process happens in the compressed latent space. To generate a new sample, the system begins with a latent space of pure noise, the diffusion model performs ancestral sampling iteratively, and this sample is decoded by the VAE decoder into a mel-spectrogram, which is converted back to audio using the Griffin-Lim algorithm.
     """)
+    
+    st.markdown("---") 
+    st.write("We are continuously training new models, and testing out new model architectures for enhanced audio quality and long-term coherence. Stay tuned for more, and don't hesitate to reach out!")
