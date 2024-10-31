@@ -9,8 +9,8 @@ def display_how_to_use():
 
     steps = [
         {
-            "name": "Step 1: Navigate to the Model Inference tab.",
-            "image": "images/inference_tab.png",
+            "name": "Step 1: Navigate to the Sample Display tab.",
+            "image": "images/listen_to_samples.png",
             "text": "After reading these steps, please navigate to the inference tab.",
             "image_width": 400
         },
@@ -22,14 +22,13 @@ def display_how_to_use():
         # },
         {
             "name": "Step 2: Listen to Generated Samples",
-            "image": "images/sample_preview.png",
             "image": "images/samples_no_images.png",
             "text": "Once the generation is complete, you may preview each individual generated sample.",
             "image_width": 400
         },
         {
             "name": "Step 3: Fill out the Evaluation Questionnaire",
-            "image": "images/evaluation_questionnaire.png",
+            "image": "images/evaluation_questionnaire_2.png",
             "text": "Lastly, head over to the 'Evaluation Questionnaire' tab and please fill out the questionnaire. Once you are done, you can submit.",
             "image_width": 400
         },

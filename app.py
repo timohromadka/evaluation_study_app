@@ -17,7 +17,7 @@ if 'logged_in' not in st.session_state:
 if not st.session_state['logged_in'] and display_login:
     display_login_page()
 else:
-    tabs = st.tabs(["How to Use", "Inference", "Evaluation Questionnaire", "How It Works"])
+    tabs = st.tabs(["How to Use", "Listen to Samples", "Evaluation Questionnaire", "How It Works"])
 
     with tabs[0]:
         how_to_use.display_how_to_use()

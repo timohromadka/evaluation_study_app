@@ -5,7 +5,7 @@ import streamlit as st
 from utils.inference_utils import load_datasets, load_model_names, load_model_steps, run_inference
 
 def display_simple_inference_tab():
-    st.title("Display Samples")
+    st.title("Listen to Samples")
 
     selected_dataset = 'spotify_sleep_dataset'
     selected_model_name = 'ra_ssd_2048_128'
@@ -17,6 +17,9 @@ def display_simple_inference_tab():
     griffin_lim_iters = 64
     seed = 42
     vae_path = None
+    
+    samples_to_display = 10
+    samples_per_page = 10
 
     pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, f'model_step_{selected_model_step}')
 
@@ -30,7 +33,7 @@ def display_simple_inference_tab():
         # Reset page number and display with pagination
         if "page_num" not in st.session_state:
             st.session_state.page_num = 0
-        display_samples_with_pagination(audio_files, image_files, st.session_state.page_num, 8)
+        display_samples_with_pagination(audio_files, image_files, st.session_state.page_num, samples_per_page)
 
 def display_samples_with_pagination(audio_files, image_files, current_page, items_per_page=8):
     start_idx = current_page * items_per_page
@@ -61,8 +64,8 @@ def display_samples_with_pagination(audio_files, image_files, current_page, item
         st.session_state.page_num = min(total_pages - 1, current_page + 1)
         st.rerun()
 
-def get_samples(output_path, scheduler, num_inference_steps, generate_new_samples=False):
+def get_samples(output_path, scheduler, num_inference_steps, generate_new_samples=False, num_samples_to_fetch=10):
     audio_path = f'audio/pregen_sch_{scheduler}_nisteps_{num_inference_steps}'
     audio_files = list((output_path / audio_path).glob("*.wav"))
     image_files = list((output_path / "images").glob("*.png"))  # Adjust path as needed
-    return sorted(audio_files), sorted(image_files)
+    return sorted(audio_files)[:num_samples_to_fetch], sorted(image_files)[:num_samples_to_fetch]
