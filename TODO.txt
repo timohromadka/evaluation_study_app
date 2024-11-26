@@ -7,10 +7,10 @@
 # make accessible to users on a) same network b) internet
 # get DDIM to work
 # put time taken to generate the samples
-# move ra_ssd_2048_128 to this repo and pick out samples
-- 12, 14, 21, 23, 24, 25, 26, 29, 33, 36, 40, 42, 49, 53, 54, 59, 70, 72, 76, 83, 94, 97, 103, 113
+# 2, 6, 10, 11, 12, 13, 14, 16, 19, 21, 23, 24, 26, 29, 33, 36
 
 # DONE
 # display mel spectrograms too
 # login and registration
 # display pre generated samples with no bugs
+# move samples from ra experiment

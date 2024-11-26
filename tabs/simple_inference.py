@@ -1,6 +1,7 @@
 import math
 import os
 from pathlib import Path
+import re
 import streamlit as st
 from utils.inference_utils import load_datasets, load_model_names, load_model_steps, run_inference
 
@@ -8,9 +9,9 @@ def display_simple_inference_tab():
     st.title("Listen to Samples")
 
     selected_dataset = 'spotify_sleep_dataset'
-    selected_model_name = 'ra_ssd_2048_128'
+    selected_model_name = 'ra_ssd_sleep_only_2048_128'
     selected_model_step = '90000'
-    num_samples = 24
+    num_samples = 16
     batch_size = 8
     scheduler = 'ddpm'
     num_inference_steps = 1000
@@ -18,8 +19,8 @@ def display_simple_inference_tab():
     seed = 42
     vae_path = None
     
-    samples_to_display = 10
-    samples_per_page = 10
+    samples_to_display = 16
+    samples_per_page = 8
 
     pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, f'model_step_{selected_model_step}')
 
@@ -67,5 +68,13 @@ def display_samples_with_pagination(audio_files, image_files, current_page, item
 def get_samples(output_path, scheduler, num_inference_steps, generate_new_samples=False, num_samples_to_fetch=10):
     audio_path = f'audio/pregen_sch_{scheduler}_nisteps_{num_inference_steps}'
     audio_files = list((output_path / audio_path).glob("*.wav"))
-    image_files = list((output_path / "images").glob("*.png"))  # Adjust path as needed
-    return sorted(audio_files)[:num_samples_to_fetch], sorted(image_files)[:num_samples_to_fetch]
+    image_files = list((output_path / "images").glob("*.png"))
+
+    def extract_number(filename):
+        match = re.search(r'(\d+)', filename.stem)
+        return int(match.group()) if match else float('inf')
+
+    sorted_audio_files = sorted(audio_files, key=extract_number)[:num_samples_to_fetch]
+    sorted_image_files = sorted(image_files, key=extract_number)[:num_samples_to_fetch]
+
+    return sorted_audio_files, sorted_image_files
