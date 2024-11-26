@@ -22,8 +22,14 @@ def display_how_to_use():
         # },
         {
             "name": "Step 2: Listen to Generated Samples",
-            "image": "images/samples_no_images.png",
-            "text": "Once the generation is complete, you may preview each individual generated sample.",
+            "image": "images/sample_preview_ovl_rel.png",
+            "text": """
+            Listen to each sample, and give it **two ratings**: **OVL** and **REL**:
+            
+            1) **Overall Rating (OVL)**: Rate the perceptual audio quality of the music (on a scale of 0 to 100).
+            2) **Relevance Rating (REL)**: Rate how close this music sounds to actual sleep music (on a scale of 0 to 100).
+            """
+            ,
             "image_width": 400
         },
         {

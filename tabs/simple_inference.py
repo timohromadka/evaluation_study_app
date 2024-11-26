@@ -1,17 +1,18 @@
 import math
 import os
 from pathlib import Path
+import random
 import re
 import streamlit as st
-from utils.inference_utils import load_datasets, load_model_names, load_model_steps, run_inference
+from utils.inference_utils import load_datasets, load_model_names, load_model_steps, run_inference, normalize_audio_to_lufs, truncate_real_audio_samples
 
 def display_simple_inference_tab():
     st.title("Listen to Samples")
 
     selected_dataset = 'spotify_sleep_dataset'
-    selected_model_name = 'ra_ssd_sleep_only_2048_128'
+    selected_model_name = 'ra_ssd_2048_128'
     selected_model_step = '90000'
-    num_samples = 16
+    # num_samples = 16
     batch_size = 8
     scheduler = 'ddpm'
     num_inference_steps = 1000
@@ -20,29 +21,69 @@ def display_simple_inference_tab():
     vae_path = None
     
     samples_to_display = 16
-    samples_per_page = 8
+    samples_per_page = 10
+    num_reference_samples = 4
 
     pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, f'model_step_{selected_model_step}')
+    # real_samples_path = Path("/home/th716/evaluation_study_app/models/spotify_sleep_dataset/waveform_sleep_only")
+    real_samples_path = Path("/home/th716/evaluation_study_app/models/spotify_sleep_dataset/waveform_sleep_only")
 
     st.session_state.inference_complete = True
 
-    # Display Generated Samples only (no pre-generated samples)
+    # Display Generated Samples with Real Samples
     if st.session_state.inference_complete:
         output_path = Path(pretrained_model_path) / 'samples'
-        audio_files, image_files = get_samples(output_path, scheduler, num_inference_steps, True)
+        audio_files, image_files = get_samples(output_path, scheduler, num_inference_steps, num_samples_to_fetch=samples_to_display)
 
-        # Reset page number and display with pagination
-        if "page_num" not in st.session_state:
-            st.session_state.page_num = 0
-        display_samples_with_pagination(audio_files, image_files, st.session_state.page_num, samples_per_page)
+        # Ensure we have at least one audio file to use as reference
+        if audio_files:
+            reference_file = audio_files[0]
 
-def display_samples_with_pagination(audio_files, image_files, current_page, items_per_page=8):
+            # Truncate the real audio samples to match the length of the reference file
+            real_audio_files = list(real_samples_path.glob("*.wav"))
+            truncated_real_samples = truncate_real_audio_samples(real_audio_files, reference_file)
+
+            # Add 4 randomly selected truncated real samples
+            real_samples = random.sample(truncated_real_samples, min(num_reference_samples, len(truncated_real_samples)))
+            mixed_audio_files = audio_files + real_samples
+            random.shuffle(mixed_audio_files)
+
+            # Reset page number and display with pagination
+            if "page_num" not in st.session_state:
+                st.session_state.page_num = 0
+            display_samples_with_pagination(mixed_audio_files, st.session_state.page_num, items_per_page=samples_per_page)
+
+def display_samples_with_pagination(audio_files, current_page, items_per_page=8):
     start_idx = current_page * items_per_page
     end_idx = min(start_idx + items_per_page, len(audio_files))
 
     for i in range(start_idx, end_idx):
         st.write(f"Sample {i + 1}")
-        st.audio(str(audio_files[i]))
+        
+        # Normalize audio to -14dB LUFS
+        normalized_audio_path = normalize_audio_to_lufs(audio_files[i], target_lufs=-14.0)
+        
+        # Display normalized audio
+        st.audio(str(normalized_audio_path))
+        
+        # Add slider for Overall Quality (OVL)
+        st.slider(
+            f"Overall Perceptual Quality", 
+            min_value=0, 
+            max_value=100, 
+            value=50, 
+            step=1, 
+            key=f"ovl_slider_{i}"
+        )
+        
+        st.slider(
+            f"Relevance to Sleep Music", 
+            min_value=0, 
+            max_value=100, 
+            value=50, 
+            step=1, 
+            key=f"rel_slider_{i}"
+        )
 
     total_pages = math.ceil(len(audio_files) / items_per_page)
 
@@ -65,7 +106,8 @@ def display_samples_with_pagination(audio_files, image_files, current_page, item
         st.session_state.page_num = min(total_pages - 1, current_page + 1)
         st.rerun()
 
-def get_samples(output_path, scheduler, num_inference_steps, generate_new_samples=False, num_samples_to_fetch=10):
+
+def get_samples(output_path, scheduler, num_inference_steps, num_samples_to_fetch=10):
     audio_path = f'audio/pregen_sch_{scheduler}_nisteps_{num_inference_steps}'
     audio_files = list((output_path / audio_path).glob("*.wav"))
     image_files = list((output_path / "images").glob("*.png"))
