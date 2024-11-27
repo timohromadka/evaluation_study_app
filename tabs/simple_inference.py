@@ -20,9 +20,9 @@ def display_simple_inference_tab():
     seed = 42
     vae_path = None
     
-    samples_to_display = 16
+    samples_to_display = 10
     samples_per_page = 10
-    num_reference_samples = 4
+    num_reference_samples = 0
 
     pretrained_model_path = os.path.join("models", selected_dataset, selected_model_name, f'model_step_{selected_model_step}')
     # real_samples_path = Path("/home/th716/evaluation_study_app/models/spotify_sleep_dataset/waveform_sleep_only")
@@ -53,58 +53,77 @@ def display_simple_inference_tab():
                 st.session_state.page_num = 0
             display_samples_with_pagination(mixed_audio_files, st.session_state.page_num, items_per_page=samples_per_page)
 
+
+
 def display_samples_with_pagination(audio_files, current_page, items_per_page=8):
+    # Shuffle audio files only once per session
+    if "shuffled_audio_files" not in st.session_state:
+        st.session_state.shuffled_audio_files = random.sample(audio_files, len(audio_files))
+    
+    # Use the shuffled audio files
+    shuffled_audio_files = st.session_state.shuffled_audio_files
+
+    # Initialize ratings storage if not already present
+    if "audio_ratings" not in st.session_state:
+        st.session_state.audio_ratings = {}
+
+    # Calculate indices for pagination
     start_idx = current_page * items_per_page
-    end_idx = min(start_idx + items_per_page, len(audio_files))
+    end_idx = min(start_idx + items_per_page, len(shuffled_audio_files))
 
     for i in range(start_idx, end_idx):
+        sample_id = f"sample_{i + 1}"  # Unique identifier for each sample
         st.write(f"Sample {i + 1}")
-        
+
         # Normalize audio to -14dB LUFS
-        normalized_audio_path = normalize_audio_to_lufs(audio_files[i], target_lufs=-14.0)
+        normalized_audio_path = normalize_audio_to_lufs(shuffled_audio_files[i], target_lufs=-14.0)
         
         # Display normalized audio
         st.audio(str(normalized_audio_path))
         
         # Add slider for Overall Quality (OVL)
-        st.slider(
-            f"Overall Perceptual Quality", 
+        ovl_rating = st.slider(
+            f"Overall Perceptual Quality (Sample {i + 1})", 
             min_value=0, 
             max_value=100, 
-            value=50, 
+            value=st.session_state.audio_ratings.get(sample_id, {}).get("overall_quality", 50), 
             step=1, 
-            key=f"ovl_slider_{i}"
+            key=f"ovl_slider_{sample_id}"
         )
         
-        st.slider(
-            f"Relevance to Sleep Music", 
+        # Add slider for Relevance to Sleep Music
+        rel_rating = st.slider(
+            f"Relevance to Sleep Music (Sample {i + 1})", 
             min_value=0, 
             max_value=100, 
-            value=50, 
+            value=st.session_state.audio_ratings.get(sample_id, {}).get("relevance", 50), 
             step=1, 
-            key=f"rel_slider_{i}"
+            key=f"rel_slider_{sample_id}"
         )
 
-    total_pages = math.ceil(len(audio_files) / items_per_page)
+        # Save ratings in session state
+        st.session_state.audio_ratings[sample_id] = {
+            "file_path": str(shuffled_audio_files[i]),
+            "overall_quality": ovl_rating,
+            "relevance": rel_rating
+        }
 
-    # Center-aligned button row with uniform spacing
+    total_pages = math.ceil(len(shuffled_audio_files) / items_per_page)
+
+    # Pagination controls
     button_row = st.columns(total_pages + 2)  # Extra columns for Prev and Next
-
-    # Previous button
     if button_row[0].button("Prev", key="prev"):
         st.session_state.page_num = max(0, current_page - 1)
         st.rerun()
-
-    # Page number buttons
     for i in range(total_pages):
         if button_row[i + 1].button(f"{i + 1}", key=f"page_{i}"):
             st.session_state.page_num = i
             st.rerun()
-
-    # Next button
     if button_row[-1].button("Next", key="next"):
         st.session_state.page_num = min(total_pages - 1, current_page + 1)
         st.rerun()
+
+
 
 
 def get_samples(output_path, scheduler, num_inference_steps, num_samples_to_fetch=10):

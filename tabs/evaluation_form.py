@@ -32,15 +32,13 @@ def display_evaluation_form():
         ]
     )
 
-
-    # Submit button
     if st.button("Submit"):
-        # Collect responses
         responses = {
             # "audio_quality": audio_quality,
             # "sleep_music_similarity": sleep_music_similarity,
             "future_participation": future_participation,
-            "clinician_status": clinician_status
+            "clinician_status": clinician_status,
+            "audio_ratings": st.session_state.get("audio_ratings", {})
         }
         
         file_path = 'responses.json'
@@ -58,4 +56,3 @@ def display_evaluation_form():
                 json.dump([responses], f)
 
         st.success("Thank you for your submission!")
-
