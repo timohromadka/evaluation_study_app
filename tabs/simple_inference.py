@@ -30,23 +30,32 @@ def display_simple_inference_tab():
 
     st.session_state.inference_complete = True
 
-    # Display Generated Samples with Real Samples
+    # Persist audio files in session state to avoid reshuffling on reruns
     if st.session_state.inference_complete:
         output_path = Path(pretrained_model_path) / 'samples'
-        audio_files, image_files = get_samples(output_path, scheduler, num_inference_steps, num_samples_to_fetch=samples_to_display)
 
-        # Ensure we have at least one audio file to use as reference
-        if audio_files:
-            reference_file = audio_files[0]
+        # Load samples only once per session
+        if "audio_files" not in st.session_state:
+            audio_files, _ = get_samples(output_path, scheduler, num_inference_steps, num_samples_to_fetch=samples_to_display)
+            st.session_state.audio_files = audio_files
 
-            # Truncate the real audio samples to match the length of the reference file
+            # Shuffle only once when initializing
+            st.session_state.shuffled_audio_files = random.sample(audio_files, len(audio_files))
+
+        if st.session_state.audio_files:
+            reference_file = st.session_state.audio_files[0]
+
+            # Truncate real audio samples to match reference
             real_audio_files = list(real_samples_path.glob("*.wav"))
             truncated_real_samples = truncate_real_audio_samples(real_audio_files, reference_file)
 
-            # Add 4 randomly selected truncated real samples
-            real_samples = random.sample(truncated_real_samples, min(num_reference_samples, len(truncated_real_samples)))
-            mixed_audio_files = audio_files + real_samples
-            random.shuffle(mixed_audio_files)
+            # Add randomly selected real samples (shuffled only once)
+            if "real_samples" not in st.session_state:
+                st.session_state.real_samples = random.sample(
+                    truncated_real_samples, min(num_reference_samples, len(truncated_real_samples))
+                )
+
+            mixed_audio_files = st.session_state.shuffled_audio_files + st.session_state.real_samples
 
             # Reset page number and display with pagination
             if "page_num" not in st.session_state:
@@ -54,14 +63,9 @@ def display_simple_inference_tab():
             display_samples_with_pagination(mixed_audio_files, st.session_state.page_num, items_per_page=samples_per_page)
 
 
-
 def display_samples_with_pagination(audio_files, current_page, items_per_page=8):
-    # Shuffle audio files only once per session
-    if "shuffled_audio_files" not in st.session_state:
-        st.session_state.shuffled_audio_files = random.sample(audio_files, len(audio_files))
-    
-    # Use the shuffled audio files
-    shuffled_audio_files = st.session_state.shuffled_audio_files
+    # Use pre-shuffled audio files from session state
+    shuffled_audio_files = audio_files
 
     # Initialize ratings storage if not already present
     if "audio_ratings" not in st.session_state:
@@ -77,27 +81,27 @@ def display_samples_with_pagination(audio_files, current_page, items_per_page=8)
 
         # Normalize audio to -14dB LUFS
         normalized_audio_path = normalize_audio_to_lufs(shuffled_audio_files[i], target_lufs=-14.0)
-        
+
         # Display normalized audio
         st.audio(str(normalized_audio_path))
-        
+
         # Add slider for Overall Quality (OVL)
         ovl_rating = st.slider(
-            f"Overall Perceptual Quality (Sample {i + 1})", 
-            min_value=0, 
-            max_value=100, 
-            value=st.session_state.audio_ratings.get(sample_id, {}).get("overall_quality", 50), 
-            step=1, 
+            f"Overall Perceptual Quality (Sample {i + 1})",
+            min_value=0,
+            max_value=100,
+            value=st.session_state.audio_ratings.get(sample_id, {}).get("overall_quality", 50),
+            step=1,
             key=f"ovl_slider_{sample_id}"
         )
-        
+
         # Add slider for Relevance to Sleep Music
         rel_rating = st.slider(
-            f"Relevance to Sleep Music (Sample {i + 1})", 
-            min_value=0, 
-            max_value=100, 
-            value=st.session_state.audio_ratings.get(sample_id, {}).get("relevance", 50), 
-            step=1, 
+            f"Relevance to Sleep Music (Sample {i + 1})",
+            min_value=0,
+            max_value=100,
+            value=st.session_state.audio_ratings.get(sample_id, {}).get("relevance", 50),
+            step=1,
             key=f"rel_slider_{sample_id}"
         )
 
@@ -117,13 +121,12 @@ def display_samples_with_pagination(audio_files, current_page, items_per_page=8)
         st.rerun()
     for i in range(total_pages):
         if button_row[i + 1].button(f"{i + 1}", key=f"page_{i}"):
+
             st.session_state.page_num = i
             st.rerun()
     if button_row[-1].button("Next", key="next"):
         st.session_state.page_num = min(total_pages - 1, current_page + 1)
         st.rerun()
-
-
 
 
 def get_samples(output_path, scheduler, num_inference_steps, num_samples_to_fetch=10):
